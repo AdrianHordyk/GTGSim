@@ -105,7 +105,6 @@ SimData <- function(Stock=MakeStock(),
   nyrs <- length(yrs)
   F.trend <- Ftrend(yr.st, yr.end, curF, F.pat, plot=plot)
 
-
   # selectivity-at-length - fishery
   sl <- (LFS - L5) /((-log(0.05,2))^0.5)
   sr <- (Linf - LFS) / ((-log(Vmaxlen,2))^0.5) # selectivity parameters are constant for all years
@@ -184,6 +183,8 @@ SimData <- function(Stock=MakeStock(),
 
     SampAges <- rep(SampAges_ess, samp_n[yr])[1:samp_n[yr]]
     SampAges <- SampAges + runif(length(SampAges), -.5, .5) # add sub-year variability to ages
+    nn <- sum(SampAges<0)
+    if (nn >0 ) SampAges[SampAges<0] <- runif(nn, 0, 1)
 
     # generate sampled data
     linfGTG <- Linfs[yr] +LinfCV*Linfs[yr]*distGTG
@@ -209,6 +210,7 @@ SimData <- function(Stock=MakeStock(),
 
     # apply observation error
     SampAges_ob <- SampAges * exp(rnorm(samp_n[yr], -0.5 * (ageSD)^2, ageSD))
+    if (any(SampAges_ob<0)) stop("Negative ages")
     Lens_ob <- Lens * exp(rnorm(samp_n[yr], -0.5 * (lenSD)^2, lenSD))
     Wght_ob <- Wghts * exp(rnorm(samp_n[yr], -0.5 * (wghtSD)^2, wghtSD))
     Mat_ob <- Maturity # assume no obs error
